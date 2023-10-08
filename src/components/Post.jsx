@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { format, formatDistanceToNow } from "date-fns";
 import ptBR from "date-fns/locale/pt-BR";
@@ -9,8 +9,11 @@ import { Comment } from "./Comment";
 import styles from "./Post.module.css";
 
 export function Post({ author, publishedAt, content }) {
+	const submitButton = useRef(null);
+
 	const [comments, setComments] = useState(["Post muito bacana, hein?!"]);
 	const [newCommentText, setNewCommentText] = useState("");
+
 	const publishedDateFormatted = format(
 		publishedAt,
 		"d 'de' LLLL 'às' HH:mm'h'",
@@ -24,18 +27,29 @@ export function Post({ author, publishedAt, content }) {
 		addSuffix: true,
 	});
 
+	function removeFocusOfSubmitButton() {
+		submitButton.current.blur();
+	}
+
 	function handleCrateNewComment() {
 		event.preventDefault();
 		setComments([...comments, newCommentText]);
+
 		setNewCommentText("");
+		
+		removeFocusOfSubmitButton();
 	}
 
 	function handleNewCommentChange() {
 		setNewCommentText(event.target.value);
 	}
 
-	function deleteComment(comment) {
-		console.log(`Deletar comentário ${comment}`);
+	function deleteComment(commentToDelete) {
+		const commentsWithoutDeletedOne = comments.filter((comment) => {
+			return comment !== commentToDelete;
+		});
+
+		setComments(commentsWithoutDeletedOne);
 	}
 
 	return (
@@ -81,7 +95,9 @@ export function Post({ author, publishedAt, content }) {
 				/>
 
 				<footer>
-					<button type="submit">Publicar</button>
+					<button type="submit" ref={submitButton}>
+						Publicar
+					</button>
 				</footer>
 			</form>
 
